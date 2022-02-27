@@ -1,66 +1,46 @@
+import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
+import 'package:flame/game.dart';
+
+import 'package:flame/components.dart';
+
+class Player extends PositionComponent with HasGameRef<SpaceShooterGame> {
+  static final _paint = Paint()..color = Colors.white;
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    canvas.drawRect(size.toRect(), _paint);
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    position = gameRef.size / 2;
+    width = 100;
+    height = 150;
+    anchor = Anchor.center;
+  }
+
+  void move(Vector2 delta) {
+    position.add(delta);
+  }
+}
+
+class SpaceShooterGame extends FlameGame with PanDetector {
+  late Player player;
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    player = Player();
+    add(player);
+  }
+
+  @override
+  void onPanUpdate(DragUpdateInfo info) {
+    player.move(info.delta.game);
+  }
+}
 
 void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
+  runApp(GameWidget(game: SpaceShooterGame()));
 }
